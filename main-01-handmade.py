@@ -10,7 +10,7 @@ from panda3d.physics import ActorNode, ForceNode, LinearVectorForce
 from panda3d.physics import PhysicsCollisionHandler
 from direct.task import Task
 
-# Before diving into this tutorial, I *strongly* recommend 
+# Before diving into this example, I *strongly* recommend
 # to go through panda cheatsheets at
 # https://www.panda3d.org/manual/index.php/Cheat_Sheets
 
@@ -57,6 +57,7 @@ class FPS(ShowBase):
 		# Some default values (see frame update function
 		# for their meaning)
 
+		self.camH = 0
 		self.camP = 0
 		self.playerH = 0
 
@@ -96,26 +97,16 @@ class FPS(ShowBase):
 
 	def handmadePlayerPhysicsFrameUpdate(self, task):
 
-		# Read mouse and compute new player heading (playerH) and camera pitch (camP).
-		# It is important to use player heading instead of camera heading because
-		# we need to turn the whole player (for walking)
-
+		# Read mouse and keyboard
 		md = self.win.getPointer(0)
-		x = md.getX()
-		y = md.getY()
 		if self.win.movePointer(0, self.win.getXSize()/2, self.win.getYSize()/2):
-			self.playerH = self.playerH - (x - self.win.getXSize()/2)*0.1
-			self.camP = self.camP - (y - self.win.getYSize()/2)*0.1
+			dx = (md.getX() - self.win.getXSize()/2)*0.1
+			dy = (md.getY() - self.win.getYSize()/2)*0.1
+		else:
+			dx = 0
+			dy = 0
 
-		# Update camera pitch
-		self.camera.setPos(0, 0, 0) # because camera is player's child
-		self.camera.setP(self.camP)
-
-		# Update player heading
-		self.player.setH(self.playerH)
-
-		# Read keyboard. For such low-level functions it is better to use
-		# polling interface.
+		# For such low-level functions it is better to use
 		forwardButton = KeyboardButton.ascii_key('w')
 		backwardButton = KeyboardButton.ascii_key('s')
 		leftButton = KeyboardButton.ascii_key('a')
@@ -124,14 +115,22 @@ class FPS(ShowBase):
 		lshift = KeyboardButton.lshift()
 		isDown = base.mouseWatcherNode.is_button_down
 
-		# If the player is on the ground, update direction based on 
-		# keyboard input
+		# Rotate camera ("head"). If on the ground, the rotation will
+		# be used for player node ("body") instead of "head"
+		self.camH = self.camH - dx
+		self.camP = self.camP - dy;
+
+		# Update only if on the ground, not when flying
 		if self.onGround:
-			self.direction = Vec3(0, 0, 0)
+
+			# update speed
 			if isDown(lshift):
 				self.speed = 10
 			else:
 				self.speed = 5
+
+			# compute new direction
+			self.direction = Vec3(0, 0, 0)
 			if isDown(forwardButton):
 				self.direction = self.direction + Vec3.forward()
 			if isDown(backwardButton):
@@ -142,6 +141,17 @@ class FPS(ShowBase):
 				self.direction = self.direction + Vec3.right()
 			if isDown(spaceKey):
 				self.vspeed = 5
+
+			# Allign "body" to "head"
+			self.playerH = self.playerH + self.camH
+			self.camH = 0
+
+		self.camera.setPos(0, 0, 0) # because camera is player's child
+
+		# Update rotations
+		self.player.setH(self.playerH)
+		self.camera.setH(self.camH)
+		self.camera.setP(self.camP)
 
 		# Apply direction to player position
 		if self.direction.normalize():

@@ -106,15 +106,6 @@ class FPS(ShowBase):
 			dx = 0
 			dy = 0
 
-		# For such low-level functions it is better to use
-		forwardButton = KeyboardButton.ascii_key('w')
-		backwardButton = KeyboardButton.ascii_key('s')
-		leftButton = KeyboardButton.ascii_key('a')
-		rightButton = KeyboardButton.ascii_key('d')
-		spaceKey = KeyboardButton.ascii_key(' ')
-		lshift = KeyboardButton.lshift()
-		isDown = base.mouseWatcherNode.is_button_down
-
 		# Rotate camera ("head"). If on the ground, the rotation will
 		# be used for player node ("body") instead of "head"
 		self.camH = self.camH - dx
@@ -122,24 +113,28 @@ class FPS(ShowBase):
 
 		# Update only if on the ground, not when flying
 		if self.onGround:
+			# Read keyboard
+			isDown = base.mouseWatcherNode.is_button_down
 
-			# update speed
-			if isDown(lshift):
+			# Update speed
+			if isDown(KeyboardButton.lshift()):
 				self.speed = 10
 			else:
 				self.speed = 5
 
-			# compute new direction
+			# Compute new direction
 			self.direction = Vec3(0, 0, 0)
-			if isDown(forwardButton):
+			if isDown(KeyboardButton.ascii_key('w')):
 				self.direction = self.direction + Vec3.forward()
-			if isDown(backwardButton):
+			if isDown(KeyboardButton.ascii_key('s')):
 				self.direction = self.direction + Vec3.back()
-			if isDown(leftButton):
+			if isDown(KeyboardButton.ascii_key('a')):
 				self.direction = self.direction + Vec3.left()
-			if isDown(rightButton):
+			if isDown(KeyboardButton.ascii_key('d')):
 				self.direction = self.direction + Vec3.right()
-			if isDown(spaceKey):
+
+			# Jump by setting speed up
+			if isDown(KeyboardButton.ascii_key(' ')):
 				self.vspeed = 5
 
 			# Allign "body" to "head"

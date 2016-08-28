@@ -1,0 +1,6 @@
+This project aims to be a simple, but complete example of FPS in Panda3D. It is based on treeform's simple-fps. It supports:
+
+* running, jumping, looking (as treeform's implementation)
+* walking/running (hold lshift)
+* no air jumping
+* no direction change in air
